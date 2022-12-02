@@ -14,6 +14,10 @@ Created by Marc Bolinches
 #define Ffloat float
 #endif
 
+#ifndef SIMD_LENGTH
+#define SIMD_LENGTH 4
+#endif
+
 void copy2file(Ffloat *a, int N);
 
 using namespace std;
@@ -65,10 +69,12 @@ int main(int narg, char **argv)
     double time = MPI_Wtime();
     
     // operations that need to be measured
-    for( size_t i = 0; i < Narray; i++)
-    {
-      a[i] = b[i] + c[i]*d[i];
-    }
+    #pragma omp simd
+    for(size_t j = 0; j < SIMD_LENGTH; j++)
+      for( size_t i = 0; i < Narray; i+=SIMD_LENGTH)
+      {
+        a[i+j] = b[i+j] + c[i+j]*d[i+j];
+      }
 
     avgTime += MPI_Wtime() - time;
 
@@ -104,7 +110,7 @@ void copy2file(Ffloat *a, int N)
   ofstream file;
   file.open("dummyFile.txt");
   
-  for(int i = 0; i < N; i++)
+  for(int i = 0; i < N; i+=10)
   {
     file << a[i] << endl;
   }
