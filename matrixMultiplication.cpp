@@ -14,6 +14,10 @@ Created by Marc Bolinches
 #define Ffloat float
 #endif
 
+#ifndef SIMD_LENGTH
+#define SIMD_LENGTH 4
+#endif
+
 void copy2file(Ffloat *a, int N);
 
 using namespace std;
@@ -75,8 +79,10 @@ int main(int narg, char **argv)
       for(size_t j = 0; j < Narray; j++)
       {
         Ffloat tmp = 0.;
-        for(size_t ii = 0; ii < Narray; ii++)
-          tmp += a[i][ii]*b[ii][j];
+        #pragma omp simd
+        for(size_t k = 0; k < SIMD_LENGTH; k++)
+        for(size_t ii = 0; ii < Narray; ii+=SIMD_LENGTH)
+          tmp += a[i][ii+k]*b[ii+k][j];
         c[i][j] = tmp;
       }
 
